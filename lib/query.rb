@@ -2,6 +2,9 @@
 
 require 'httparty'
 
+class HTTPError < StandardError
+end
+
 # HTTP query forge class for Root-Me and Octoprint APIs.
 class QueryForge
   def check_rootme
@@ -73,7 +76,15 @@ class QueryForge
     if cookie != ''
         headers['Cookie'] = cookie
     end
-    response = HTTParty.get(url, format: :plain, :headers => headers)
-    JSON.parse response, symbolize_names: true
+    tries = 0
+    while tries < 5
+        begin
+            response = HTTParty.get(url, format: :plain, :headers => headers)
+            return JSON.parse response, symbolize_names: true
+        rescue Errno::ECONNRESET
+            tries += 1
+        end
+    end
+    raise HTTPError "Too many failed HTTP requests"
   end
 end

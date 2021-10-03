@@ -11,7 +11,7 @@ bot = ChocoBot.new env
 qforge = QueryForge.new env
 
 bot.ready do
-  bot.pm('I\'m up!')
+  bot.pm('⚙️ I\'m up!')
 end
 
 bot.run(true)
@@ -24,7 +24,7 @@ begin
     bot.pm(qforge.check_printing)
     # Root-Me
     bot.pm(qforge.check_rootme)
-    sleep 60
+    sleep env.get('SLEEP_TIME').to_i
   end
 rescue Interrupt
   p 'Exiting'
