@@ -81,7 +81,8 @@ class QueryForge
         begin
             response = HTTParty.get(url, format: :plain, :headers => headers)
             return JSON.parse response, symbolize_names: true
-        rescue Errno::ECONNRESET
+        rescue Errno::ECONNRESET, Errno::ENETUNREACH
+            sleep 1
             tries += 1
         end
     end
