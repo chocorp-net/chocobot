@@ -81,11 +81,11 @@ class QueryForge
         begin
             response = HTTParty.get(url, format: :plain, :headers => headers)
             return JSON.parse response, symbolize_names: true
-        rescue Errno::ECONNRESET, Errno::ENETUNREACH
+        rescue Errno::ECONNRESET, Errno::ENETUNREACH, Net::OpenTimeout
             sleep 1
             tries += 1
         end
     end
-    raise HTTPError "Too many failed HTTP requests"
+    raise HTTPError.new "Too many failed HTTP requests"
   end
 end
