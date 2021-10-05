@@ -86,6 +86,6 @@ class QueryForge
             tries += 1
         end
     end
-    raise HTTPError "Too many failed HTTP requests"
+    raise HTTPError.new "Too many failed HTTP requests"
   end
 end
