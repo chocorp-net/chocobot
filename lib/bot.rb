@@ -2,21 +2,68 @@
 
 require 'discordrb'
 
-# Discord Bot with easy access to pm owner.
+require_relative 'query'
+require_relative 'env/env'
+
+# Discord Bot which PM its owner.
 class ChocoBot < Discordrb::Bot
-  def initialize(environment)
-    super(token: environment.get('DISCORD_TOKEN'))
-    owner_id = environment.get('OWNER_ID')
+  private
+  def initialize
+    # utils
+    @env = Environment.new
+    @qforge = QueryForge.new @env
+    # init
+    super(token: @env.get('DISCORD_TOKEN'))
+    owner_id = @env.get('OWNER_ID')
     @owner = user(owner_id.to_i)
+    @error = nil
   end
 
-  def pm(msg)
+  def say(msg, err=false)
     return if msg.nil?
+    if err
+      msg = "#```⚠️ #{msg} ⚠️```"
+    end
 
     begin
       @owner.pm(msg)
-    rescue RestClient::BadRequest
+    rescue RestClient::BadRequest => e
       warn "Unable to send: #{msg}"
+      warn "Error: #{e.to_s}"
+    end
+  end
+
+  def warn(msg)
+    say(msg, true)
+  end
+
+
+  public
+  def run
+    self.ready do
+      say('⚙️ I\'m up!')
+    end
+    super.run(true)
+
+    # Main loop
+    begin
+      loop do
+        for func in ['printing', 'rootme']  # 'nagios']
+          begin
+            method = "check_#{func}"
+            resp = @qforge.public_send(method)
+            say(resp)
+          rescue Exception => e
+            warn("Error when pulling `#{func}` data:\n#{e.to_s}")
+          end
+        end
+        sleep @env.get('SLEEP_TIME').to_i
+      end
+    rescue Interrupt
+      p 'Exiting'
+    ensure
+      say('💤 Going down!')
+      bot.stop
     end
   end
 end
