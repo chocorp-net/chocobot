@@ -69,7 +69,11 @@ class QueryForge
     url = "#{@octoprint_base_url}/connection"
     headers = { 'X-Api-Key': "#{@octoprint_key}",
                 'Host': 'www.chocorp.net:8080' }
-    get(url, headers)[:current][:state] === 'Printing'
+    begin
+      get(url, headers)[:current][:state] === 'Printing'
+    rescue Errno::ECONNREFUSED # PI is probably off
+      false
+    end
   end
 
   def get(url, headers = {}, cookie = '')
