@@ -71,7 +71,7 @@ class QueryForge
                 'Host': 'www.chocorp.net:8080' }
     begin
       get(url, headers)[:current][:state] === 'Printing'
-    rescue Errno::ECONNREFUSED # PI is probably off
+    rescue Errno::ECONNREFUSED # PI is off or octoprint crashed
       false
     end
   end

@@ -2,11 +2,18 @@
 
 require 'discordrb'
 
-require_relative 'query'
 require_relative 'env/env'
+require_relative 'query'
+require_relative 'server'
 
 # Discord Bot which PM its owner.
 class ChocoBot < Discordrb::Bot
+  def alert(type, msg, errno=0)
+    content = "`[#{type}]` #{msg}"
+    error = ! [0, nil].include?(errno)
+    say(content, error)
+  end
+
   private
   def initialize
     # utils
@@ -17,12 +24,17 @@ class ChocoBot < Discordrb::Bot
     owner_id = @env.get('OWNER_ID')
     @owner = user(owner_id.to_i)
     @error = nil
+    @server = Server.new(@env, self)
   end
 
   def say(msg, err=false)
     return if msg.nil?
-    if err
-      msg = "#```⚠️ #{msg} ⚠️```"
+    if err == 1 or err == true
+      msg = "⚠️ #{msg} ⚠️"
+    elsif err == 2
+      msg = "⛔ #{msg} ⛔"
+    elsif err == 3
+      msg = "❓ #{msg} ❓"
     end
 
     begin
@@ -40,15 +52,15 @@ class ChocoBot < Discordrb::Bot
 
   public
   def run
-    self.ready do
-      say('⚙️ I\'m up!')
-    end
-    super.run(true)
-
-    # Main loop
     begin
+      self.ready do
+        say('⚙️ I\'m up!')
+      end
+      super.run(true)
+
+      # Main loop
       loop do
-        for func in ['printing', 'rootme']  # 'nagios']
+        for func in ['printing', 'rootme']
           begin
             method = "check_#{func}"
             resp = @qforge.public_send(method)
@@ -63,7 +75,7 @@ class ChocoBot < Discordrb::Bot
       p 'Exiting'
     ensure
       say('💤 Going down!')
-      bot.stop
+      stop
     end
   end
 end
