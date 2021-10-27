@@ -8,12 +8,6 @@ require_relative 'server'
 
 # Discord Bot which PM its owner.
 class ChocoBot < Discordrb::Bot
-  def alert(type, msg, errno=0)
-    content = "`[#{type}]` #{msg}"
-    error = ! [0, nil].include?(errno)
-    say(content, error)
-  end
-
   private
   def initialize
     # utils
@@ -77,5 +71,11 @@ class ChocoBot < Discordrb::Bot
       say('💤 Going down!')
       stop
     end
+  end
+
+  def alert(type, msg, errno=0)
+    content = "`[#{type}]` #{msg}"
+    error = ! [0, nil].include?(errno) ? errno : false
+    say(content, error)
   end
 end
