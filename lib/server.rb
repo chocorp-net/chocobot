@@ -23,7 +23,7 @@ class Server < TCPServer
           bytes = resp.chomp.split(';')
           bytes = bytes.map { |s| s.to_i }
           type, msg, errno = bytes.pack('U*').split('|')
-          @bot.alert type, msg, errno
+          @bot.alert(type, msg, errno.to_i)
         end
         client.close
       end
