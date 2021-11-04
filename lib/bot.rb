@@ -66,7 +66,9 @@ class ChocoBot < Discordrb::Bot
         sleep @env.get('SLEEP_TIME').to_i
       end
     rescue Interrupt
-      p 'Exiting'
+      $stderr.p 'Exiting'
+    rescue Exception
+      alert("Unhandled exception happened.\n#{caller.join('\n')}", 3)
     ensure
       say('💤 Going down!')
       stop
