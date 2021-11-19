@@ -5,7 +5,7 @@
 require_relative 'lib/bot'
 
 # If PID file already exists, consider it is still running
-pid_file = 'chocobot.pid'
+pid_file = "#{File.expand_path(File.dirname(__FILE__))}/chocobot.pid"
 if File.file?(pid_file)
     $stderr.puts "Chocobot is already running (PID ##{File.read(pid_file.chomp)})"
     exit 1
