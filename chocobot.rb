@@ -14,9 +14,14 @@ end
 # Writing PID into a file
 File.open(pid_file, 'w') { |f| f.write "#{Process.pid}" }
 
+begin
+    bot = ChocoBot.new
+    bot.run
+rescue Exception => e
+    raise e
+ensure
+    # Removing PID file on exit
+    File.delete(pid_file)
+end
 
-bot = ChocoBot.new
-bot.run
 
-# Removing PID file on exit
-File.delete(pid_file)

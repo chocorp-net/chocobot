@@ -44,7 +44,7 @@ class QueryForge
     @rootme_key = environment.get('ROOTME_APIKEY')
     @scores = pull_scores
     # Octoprint
-    @octoprint_base_url = 'https://www.chocorp.net:8080/api'
+    @octoprint_base_url = environment.get('OCTOPRINT_URL')
     @octoprint_key = environment.get('OCTOPRINT_APIKEY')
     @printing = printer_printing?
 
@@ -54,8 +54,11 @@ class QueryForge
     url = "#{@rootme_base_url}/auteurs"
     scores = { 'mulog': 62_550, 'beubz': 469_552, 'Mcdostone': 120_259 }
     scores.each do |k, v|
-      json = get("#{url}/#{v}", cookie: "api_key=#{@rootme_key}")
-      scores[k] = json[:validations]
+      response = get("#{url}/#{v}", cookie: "api_key=#{@rootme_key}")
+      if response == nil
+        return nil
+      end
+      scores[k] = response[:validations]
     end
     scores
   end
@@ -68,9 +71,13 @@ class QueryForge
   def printer_printing?
     url = "#{@octoprint_base_url}/connection"
     headers = { 'X-Api-Key': "#{@octoprint_key}",
-                'Host': 'www.chocorp.net:8080' }
+                'Host': @octoprint_base_url.gsub(/https?:\/\//, '') }
     begin
-      get(url, headers)[:current][:state] === 'Printing'
+      response = get(url, headers)
+      if response == nil
+        return false
+      end
+      response[:current][:state] === 'Printing'
     rescue Errno::ECONNREFUSED # PI is off or octoprint crashed
       false
     end
@@ -83,13 +90,16 @@ class QueryForge
     tries = 0
     while tries < 5
         begin
-            response = HTTParty.get(url, format: :plain, :headers => headers)
-            return JSON.parse response, symbolize_names: true
+          response = HTTParty.get(url, format: :plain, :headers => headers)
+          return JSON.parse response, symbolize_names: true
         rescue Errno::ECONNRESET, Errno::ENETUNREACH, Net::OpenTimeout
-            sleep 1
-            tries += 1
+          sleep 1
+          tries += 1
+        rescue JSON::ParserError
+          return nil
         end
     end
-    raise HTTPError.new "Too many failed HTTP requests"
+    $stderr.puts "Too many failed HTTP requests (#{url})"
+    nil
   end
 end
