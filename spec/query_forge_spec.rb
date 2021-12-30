@@ -26,6 +26,12 @@ RSpec.describe QueryForge do
       expect(forge.get('https://example.com',
                        cookie: 'test=ok')).to eq 'abc'
     end
+
+    it 'fails to respond properly' do
+      stub_request(:get, 'https://example.com')
+        .to_raise(Errno::ECONNRESET)
+      expect { forge.get('https://example.com') }.to raise_error HTTPError
+    end
   end
 
   context 'when the response is JSON' do
@@ -34,21 +40,6 @@ RSpec.describe QueryForge do
       stub_request(:get, 'https://example.com')
         .to_return(body: '{"abc":"ok"}')
       expect(forge.get_as_json('https://example.com'))
-        .to eq(JSON.parse('{"abc":"ok"}'))
-    end
-
-    it 'performs GET with headers' do
-      stub_request(:get, 'https://example.com')
-        .with(headers: { test: 'ok' }).to_return(body: '{"abc":"ok"}')
-      expect(forge.get_as_json('https://example.com', { test: 'ok' }))
-        .to eq(JSON.parse('{"abc":"ok"}'))
-    end
-
-    it 'performs GET with cookies' do
-      stub_request(:get, 'https://example.com')
-        .with(headers: { Cookie: 'test=ok' })
-        .to_return(body: '{"abc":"ok"}')
-      expect(forge.get_as_json('https://example.com', cookie: 'test=ok'))
         .to eq(JSON.parse('{"abc":"ok"}'))
     end
   end

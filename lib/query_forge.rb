@@ -17,16 +17,19 @@ class QueryForge
         raise HTTPError if resp.body.nil? || resp.body.empty?
 
         return resp.body
-      rescue Errno::ECONNRESET, Errno::ENETUNREACH, Net::OpenTimeout, HTTPError
+      rescue Errno::ECONNRESET, Errno::ENETUNREACH,
+             Net::OpenTimeout, HTTPError # => e
         sleep 1
         tries += 1
+        # raise e
       end
     end
-    warn "Too many failed HTTP requests (#{url})"
+    raise HTTPError, "HTTP request to #{url} failed"
   end
 
   # GET request, return response as JSON
   def get_as_json(url, headers = {}, cookie = '')
-    JSON.parse get(url, headers, cookie)
+    resp = get(url, headers, cookie)
+    JSON.parse resp
   end
 end
