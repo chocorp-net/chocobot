@@ -1,7 +1,11 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.8.0)
+      public_suffix (>= 2.0.2, < 5.0)
     ast (2.4.2)
+    crack (0.4.5)
+      rexml
     diff-lcs (1.5.0)
     discordrb (3.4.0)
       discordrb-webhooks (~> 3.3.0)
@@ -15,6 +19,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     event_emitter (0.2.6)
     ffi (1.15.4)
+    hashdiff (1.0.1)
     http-accept (1.7.0)
     http-cookie (1.0.4)
       domain_name (~> 0.5)
@@ -28,10 +33,10 @@ GEM
     netrc (0.11.0)
     opus-ruby (1.0.1)
       ffi
-    os (1.1.4)
     parallel (1.21.0)
     parser (3.0.3.2)
       ast (~> 2.4.1)
+    public_suffix (4.0.6)
     rainbow (3.0.0)
     regexp_parser (2.2.0)
     rest-client (2.1.0)
@@ -71,6 +76,10 @@ GEM
       unf_ext
     unf_ext (0.0.8)
     unicode-display_width (2.1.0)
+    webmock (3.14.0)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
     websocket (1.2.9)
     websocket-client-simple (0.3.0)
       event_emitter
@@ -82,10 +91,10 @@ PLATFORMS
 DEPENDENCIES
   discordrb
   httparty
-  os
   rspec
   rubocop
   rubocop-rspec
+  webmock
 
 RUBY VERSION
    ruby 3.0.3p157
