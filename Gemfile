@@ -1,8 +1,11 @@
 source "https://rubygems.org"
-ruby "2.7.0"
+ruby "3.0.3"
 
 gem 'discordrb'
-gem 'rspec', :group => :test
-gem 'rubocop', :group => :test
-gem 'rubocop-rspec', :group => :test
 gem 'httparty'
+
+group :test do
+  gem 'rspec'
+  gem 'rubocop'
+  gem 'rubocop-rspec'
+end
