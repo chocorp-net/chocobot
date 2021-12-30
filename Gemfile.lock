@@ -28,6 +28,7 @@ GEM
     netrc (0.11.0)
     opus-ruby (1.0.1)
       ffi
+    os (1.1.4)
     parallel (1.21.0)
     parser (3.0.3.2)
       ast (~> 2.4.1)
@@ -81,6 +82,7 @@ PLATFORMS
 DEPENDENCIES
   discordrb
   httparty
+  os
   rspec
   rubocop
   rubocop-rspec
