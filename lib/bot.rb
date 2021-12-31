@@ -2,82 +2,78 @@
 
 require 'discordrb'
 
-require_relative 'env/env'
-require_relative 'query'
-require_relative 'server'
+require_relative 'env'
 
 # Discord Bot which PM its owner.
 class ChocoBot < Discordrb::Bot
   private
-  def initialize
-    # utils
-    @env = Environment.new
-    @qforge = QueryForge.new @env
-    # init
+  def initialize(env)
+    @env = env
+    owner_id = @env.get('DISCORD_OWNER_ID')
     super(token: @env.get('DISCORD_TOKEN'))
-    owner_id = @env.get('OWNER_ID')
     @owner = user(owner_id.to_i)
-    @error = nil
-    @server = Server.new(@env, self)
+    @dev = @env.get('CHOCOBOT_ENV').upcase != 'PRODUCTION'
   end
 
-  def say(msg, err=false)
-    return if msg.nil?
-    if err == 1 or err == true
-      msg = "⚠️ #{msg} ⚠️"
-    elsif err == 2
-      msg = "⛔ #{msg} ⛔"
-    elsif err == 3
-      msg = "❓ #{msg} ❓"
-    end
-
-    begin
-      @owner.pm(msg)
-    rescue RestClient::BadRequest => e
-      warn "Unable to send: #{msg}"
-      warn "Error: #{e.to_s}"
-    end
+  # Send data to owner after formatting.
+  def send(data)
+    data.gsub!(/<\/?b>/, '**')
+    data.gsub!(/<\/?i>/, '*')
+    say(data)
   end
-
-  def warn(msg)
-    say(msg, true)
-  end
-
 
   public
+  # Start the Discord bot and plugins clock.
   def run
-    begin
-      self.ready do
-        say('⚙️ I\'m up!')
-      end
-      super.run(true)
+    super.run true
+    info('⚙️ I\'m up!')
 
-      # Main loop
-      loop do
-        for func in ['printing', 'rootme']
-          begin
-            method = "check_#{func}"
-            resp = @qforge.public_send(method)
-            say(resp)
-          rescue Exception => e
-            warn("Error when pulling `#{func}` data:\n#{e.to_s}")
-          end
-        end
-        sleep @env.get('SLEEP_TIME').to_i
-      end
-    rescue Interrupt
-      $stderr.puts 'Catched interrupt; Exiting...'
-    rescue Exception
-      alert("Unhandled exception happened.\n#{caller.join('\n')}", 3)
-    ensure
-      say('💤 Going down!')
-      stop
+    # Look for plugins
+    # TODO
+    # Run their stuff
+    # TODO
+
+    stop
+  end
+
+  # Debug messages.
+  # Only printed in development environment.
+  def debug(msg)
+    if @dev
+      msg = "🔨 #{msg}"
+      send(msg)
     end
   end
 
-  def alert(type, msg, errno=0)
-    content = "`[#{type}]` #{msg}"
-    error = ! [0, nil].include?(errno) ? errno : false
-    say(content, error)
+  # Basic messages. Always displayed.
+  def info(msg)
+    msg = "ℹ️ #{msg}"
+    send(msg)
+  end
+
+  # Warnings.
+  def warn(msg)
+    msg = "⚠️ #{msg}"
+    send(msg)
+  end
+
+  # Critical alerts.
+  def critical(msg)
+    msg =  "⛔ #{msg}"
+    send(msg)
+  end
+
+  # Messages with unknown level. Always print.
+  def unknown(msg)
+    msg = "❓ #{msg}"
+    send(msg)
+  end
+
+  # Traces
+  def error(err)
+    if @dev
+      msg = "```\n#{err}\n```"
+      send(msg)
+    end
   end
 end
