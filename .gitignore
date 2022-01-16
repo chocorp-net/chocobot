@@ -1,5 +1,5 @@
-chocobot.env
 chocobot.pid
+config.rb
 coverage/
 *.sw[a-p]
 .vscode/

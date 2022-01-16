@@ -17,11 +17,10 @@ Before running the bot, you need to create a few environment variables:
 
 ```bash
 cat << STOP
-export CHOCOBOT_ENV=dev  # case insensitive; if other than 'production', considered as development
-export DISCORD_OWNER_ID="1234567890"  # Discord ID of the user you want to receive the DMs
-export DISCORD_TOKEN="abcdef45"  # Discord authorization token
-STOP > chocobot.env
-source chocobot.env
+ENV['CHOCOBOT_ENV']='dev'  # case insensitive; if other than 'production', considered as development
+ENV['DISCORD_OWNER_ID']='1234567890'  # Discord ID of the user you want to receive the DMs
+ENV['DISCORD_TOKEN']='abcdef45'  # Discord authorization token
+STOP > config.rb
 ruby chocobot.rb
 ```
 
@@ -41,9 +40,9 @@ Example config:
 
 ```bash
 cat << STOP
-export NAGIOS_SERVER_HOSTNAME=127.0.0.1
-export NAGIOS_SERVER_PORT=12345
-STOP >> chocobot.env
+ENV['NAGIOS_SERVER_HOSTNAME']='127.0.0.1'
+ENV['NAGIOS_SERVER_PORT']='12345'
+STOP >> config.rb
 ```
 
 ### Octoprint
@@ -54,9 +53,9 @@ Example config:
 
 ```bash
 cat << STOP
-export OCTOPRINT_URL="https://octoprint.example/api"
-export OCTOPRINT_APIKEY="API_KEY"
-STOP >> chocobot.env
+ENV['OCTOPRINT_URL']='https://octoprint.example/api'
+ENV['OCTOPRINT_APIKEY']='API_KEY'
+STOP >> config.rb
 ```
 
 ### Root-Me
@@ -66,7 +65,7 @@ The [Root-Me](https://www.root-me.org) plugin queries the Root-Me API and notifi
 Example config:
 
 ```bash
-export ROOTME_URL="https://api.www.root-me.org"
-export ROOTME_APIKEY="API_KEY"
+ENV['ROOTME_URL']='https://api.www.root-me.org'
+ENV['ROOTME_APIKEY']='API_KEY'
 ```
 
