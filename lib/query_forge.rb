@@ -8,7 +8,8 @@ end
 # HTTP query forge class
 class QueryForge
   # GET request, return plain response
-  def get(url, headers = {}, cookie = '')
+  def self.get(url, headers = {}, cookie = '')
+    puts 'sisi'
     headers['Cookie'] = cookie if cookie != ''
     tries = 0
     while tries < 5
@@ -28,7 +29,7 @@ class QueryForge
   end
 
   # GET request, return response as JSON
-  def get_as_json(url, headers = {}, cookie = '')
+  def self.get_as_json(url, headers = {}, cookie = '')
     resp = get(url, headers, cookie)
     JSON.parse resp
   end

@@ -5,6 +5,7 @@ ruby '3.0.3'
 
 gem 'discordrb'
 gem 'httparty'
+gem 'rufus-scheduler'
 
 group :test do
   gem 'rspec'

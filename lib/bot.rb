@@ -2,47 +2,54 @@
 
 require 'discordrb'
 
-require_relative 'env'
+require_relative 'plugins_loader'
 
 # Discord Bot which PM its owner.
-class ChocoBot < Discordrb::Bot
+class ChocoBot
   private
-  def initialize(env)
-    @env = env
-    owner_id = @env.get('DISCORD_OWNER_ID')
-    super(token: @env.get('DISCORD_TOKEN'))
-    @owner = user(owner_id.to_i)
-    @dev = @env.get('CHOCOBOT_ENV').upcase != 'PRODUCTION'
+
+  def initialize
+    # Discord bot, runs on an independant process.
+    @bot = Discordrb::Bot.new token: ENV['DISCORD_TOKEN']
+    # Using DISCORD_OWNER_ID to build an object able to PM the owner.
+    owner_id = ENV['DISCORD_OWNER_ID']
+    @owner = @bot.user(owner_id.to_i)
+    # Dev environment?
+    @dev = ENV['CHOCOBOT_ENV'].upcase != 'PRODUCTION'
   end
 
   # Send data to owner after formatting.
   def send(data)
-    data.gsub!(/<\/?b>/, '**')
-    data.gsub!(/<\/?i>/, '*')
-    say(data)
+    data.gsub!(%r{</?b>}, '**')
+    data.gsub!(%r{</?i>}, '*')
+    @owner.pm(data)
   end
 
   public
+
   # Start the Discord bot and plugins clock.
   def run
-    super.run true
-    info('⚙️ I\'m up!')
-
-    # Look for plugins
-    # TODO
-    # Run their stuff
-    # TODO
-
-    stop
+    PluginsLoader.new self
+    begin
+      info 'Booting...'
+      @bot.run
+    rescue Interrupt
+      info 'Shutting down...'
+    rescue => e
+      critical 'Unknown error happened'
+      error e
+      $stderr.puts "#{e.class}\n#{e.message}"
+      exit 1
+    end
   end
 
   # Debug messages.
   # Only printed in development environment.
   def debug(msg)
-    if @dev
-      msg = "🔨 #{msg}"
-      send(msg)
-    end
+    return unless @dev
+
+    msg = "🔨 #{msg}"
+    send(msg)
   end
 
   # Basic messages. Always displayed.
@@ -59,7 +66,7 @@ class ChocoBot < Discordrb::Bot
 
   # Critical alerts.
   def critical(msg)
-    msg =  "⛔ #{msg}"
+    msg = "⛔ #{msg}"
     send(msg)
   end
 
@@ -71,9 +78,9 @@ class ChocoBot < Discordrb::Bot
 
   # Traces
   def error(err)
-    if @dev
-      msg = "```\n#{err}\n```"
-      send(msg)
-    end
+    return unless @dev
+
+    msg = "```#{err.class}\n#{err.message}```"
+    send(msg)
   end
 end

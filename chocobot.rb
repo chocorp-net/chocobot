@@ -4,24 +4,24 @@
 
 require_relative 'lib/bot'
 
+# logger = Logger.new($stdout)
+
 # If PID file already exists, consider it is still running
-pid_file = "#{File.expand_path(File.dirname(__FILE__))}/chocobot.pid"
+pid_file = "#{__dir__}/chocobot.pid"
 if File.file?(pid_file)
-    $stderr.puts "Chocobot is already running (PID ##{File.read(pid_file.chomp)})"
-    exit 1
+  warn "Chocobot is already running (PID ##{File.read(pid_file.chomp)})"
+  exit 1
 end
 
 # Writing PID into a file
-File.open(pid_file, 'w') { |f| f.write "#{Process.pid}" }
+File.write(pid_file, Process.pid.to_s)
 
 begin
-    bot = ChocoBot.new
-    bot.run
-rescue Exception => e
-    raise e
+  bot = ChocoBot.new
+  bot.run
+rescue StandardError => e
+  raise e
 ensure
-    # Removing PID file on exit
-    File.delete(pid_file)
+  # Removing PID file on exit
+  File.delete(pid_file)
 end
-
-
