@@ -2,82 +2,87 @@
 
 require 'discordrb'
 
-require_relative 'env/env'
-require_relative 'query'
-require_relative 'server'
+require_relative 'plugins_loader'
 
 # Discord Bot which PM its owner.
-class ChocoBot < Discordrb::Bot
+class ChocoBot
   private
+
   def initialize
-    # utils
-    @env = Environment.new
-    @qforge = QueryForge.new @env
-    # init
-    super(token: @env.get('DISCORD_TOKEN'))
-    owner_id = @env.get('OWNER_ID')
-    @owner = user(owner_id.to_i)
-    @error = nil
-    @server = Server.new(@env, self)
+    # Discord bot, runs on an independant process.
+    @bot = Discordrb::Bot.new token: ENV['DISCORD_TOKEN']
+    # Using DISCORD_OWNER_ID to build an object able to PM the owner.
+    owner_id = ENV['DISCORD_OWNER_ID']
+    @owner = @bot.user(owner_id.to_i)
+    # Dev environment?
+    @dev = ENV['CHOCOBOT_ENV'].upcase != 'PRODUCTION'
   end
 
-  def say(msg, err=false)
-    return if msg.nil?
-    if err == 1 or err == true
-      msg = "⚠️ #{msg} ⚠️"
-    elsif err == 2
-      msg = "⛔ #{msg} ⛔"
-    elsif err == 3
-      msg = "❓ #{msg} ❓"
-    end
-
-    begin
-      @owner.pm(msg)
-    rescue RestClient::BadRequest => e
-      warn "Unable to send: #{msg}"
-      warn "Error: #{e.to_s}"
-    end
+  # Send data to owner after formatting.
+  def send(data)
+    data.gsub!(%r{</?b>}, '**')
+    data.gsub!(%r{</?i>}, '*')
+    @owner.pm(data)
   end
-
-  def warn(msg)
-    say(msg, true)
-  end
-
 
   public
-  def run
-    begin
-      self.ready do
-        say('⚙️ I\'m up!')
-      end
-      super.run(true)
 
-      # Main loop
-      loop do
-        for func in ['printing', 'rootme']
-          begin
-            method = "check_#{func}"
-            resp = @qforge.public_send(method)
-            say(resp)
-          rescue Exception => e
-            warn("Error when pulling `#{func}` data:\n#{e.to_s}")
-          end
-        end
-        sleep @env.get('SLEEP_TIME').to_i
-      end
+  # Start the Discord bot and plugins clock.
+  def run
+    loader = PluginsLoader.new self
+    begin
+      info 'Booting...'
+      @bot.run
     rescue Interrupt
-      $stderr.puts 'Catched interrupt; Exiting...'
-    rescue Exception
-      alert("Unhandled exception happened.\n#{caller.join('\n')}", 3)
-    ensure
-      say('💤 Going down!')
-      stop
+      info 'Shutting down...'
+      loader.stop
+    rescue StandardError => e
+      critical 'Unknown error happened'
+      error e
+      warn "#{e.class}\n#{e.message}"
+      loader.stop
+      exit 1
     end
   end
 
-  def alert(type, msg, errno=0)
-    content = "`[#{type}]` #{msg}"
-    error = ! [0, nil].include?(errno) ? errno : false
-    say(content, error)
+  # Debug messages.
+  # Only printed in development environment.
+  def debug(msg)
+    return unless @dev
+
+    msg = "🔨 #{msg}"
+    send(msg)
+  end
+
+  # Basic messages. Always displayed.
+  def info(msg)
+    msg = "ℹ️ #{msg}"
+    send(msg)
+  end
+
+  # Warnings.
+  def warning(msg)
+    msg = "⚠️ #{msg}"
+    send(msg)
+  end
+
+  # Critical alerts.
+  def critical(msg)
+    msg = "⛔ #{msg}"
+    send(msg)
+  end
+
+  # Messages with unknown level. Always print.
+  def unknown(msg)
+    msg = "❓ #{msg}"
+    send(msg)
+  end
+
+  # Traces
+  def error(err)
+    return unless @dev
+
+    msg = "```#{err.class}\n#{err.message}```"
+    send(msg)
   end
 end

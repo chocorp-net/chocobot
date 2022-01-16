@@ -1,3 +1,5 @@
 chocobot.env
 chocobot.pid
+coverage/
 *.sw[a-p]
+.vscode/

@@ -1,8 +1,16 @@
-source "https://rubygems.org"
-ruby "2.7.0"
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+ruby '3.0.3'
 
 gem 'discordrb'
-gem 'rspec', :group => :test
-gem 'rubocop', :group => :test
-gem 'rubocop-rspec', :group => :test
 gem 'httparty'
+gem 'rufus-scheduler'
+
+group :test do
+  gem 'rspec'
+  gem 'rubocop'
+  gem 'rubocop-rspec'
+  gem 'simplecov'
+  gem 'webmock'
+end
