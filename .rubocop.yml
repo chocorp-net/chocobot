@@ -13,9 +13,10 @@ Metrics/BlockLength:
   Exclude:
     - 'spec/*'
 
-Lint/MissingSuper:
+Lint/UnusedMethodArgument:
   Exclude:
     - '**/*_plugin.rb'
+
 
 AllCops:
   NewCops: enable
