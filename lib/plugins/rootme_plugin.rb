@@ -25,6 +25,8 @@ class Plugin
     scores.each do |k, v|
       response = QueryForge.get_as_json("#{url}/#{v}",
                                         cookie: "api_key=#{@rootme_apikey}")
+      # response can be an array lmao
+      response = response[0] if response.is_a? Array
       return nil if response.nil? || response.key?(:error)
 
       scores[k] = response['validations']
@@ -47,6 +49,12 @@ class Plugin
 
   def compare_scores
     scores = pull_scores
+    # If for some reason couldn't pull scores already,
+    # just update them
+    if @scores == nil
+      @scores = scores
+      return
+    end
     buffer = []  # One entry per chall achieved
 
     @scores.each do |player, _|
