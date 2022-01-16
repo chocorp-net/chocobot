@@ -29,16 +29,18 @@ class ChocoBot
 
   # Start the Discord bot and plugins clock.
   def run
-    PluginsLoader.new self
+    loader = PluginsLoader.new self
     begin
       info 'Booting...'
       @bot.run
     rescue Interrupt
       info 'Shutting down...'
+      loader.stop
     rescue StandardError => e
       critical 'Unknown error happened'
       error e
       warn "#{e.class}\n#{e.message}"
+      loader.stop
       exit 1
     end
   end

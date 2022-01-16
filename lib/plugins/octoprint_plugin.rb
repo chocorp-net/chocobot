@@ -34,4 +34,7 @@ class Plugin
       false
     end
   end
+
+  def stop
+  end
 end

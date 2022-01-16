@@ -28,4 +28,8 @@ class PluginsLoader
       @plugins.append Plugin.new(@scheduler, @bot)
     end
   end
+
+  def stop
+    @plugins.each { |p| P.stop }
+  end
 end

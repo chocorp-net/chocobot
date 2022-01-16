@@ -48,4 +48,7 @@ class Plugin
       bot.info buffer.join '\n'
     end
   end
+
+  def stop
+  end
 end
