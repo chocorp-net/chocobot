@@ -8,9 +8,13 @@ end
 # HTTP query forge class
 class QueryForge
   # GET request, return plain response
-  def self.get(url, headers = {}, cookie = '')
-    puts 'sisi'
-    headers['Cookie'] = cookie if cookie != ''
+  def self.get(url, options = {})
+    headers = options[:headers] ? options[:headers] : {}
+    if options[:cookies]
+      headers['Cookie'] = options[:cookie]
+    end
+ 
+    headers['Cookie'] = options[:cookie] if options[:cookie] != ''
     tries = 0
     while tries < 5
       begin
@@ -22,15 +26,14 @@ class QueryForge
              Net::OpenTimeout, HTTPError # => e
         sleep 1
         tries += 1
-        # raise e
       end
     end
-    raise HTTPError, "HTTP request to #{url} failed"
+    raise HTTPError, "HTTP request to #{url} failed too many times"
   end
 
   # GET request, return response as JSON
-  def self.get_as_json(url, headers = {}, cookie = '')
-    resp = get(url, headers, cookie)
+  def self.get_as_json(url, options = {})
+    resp = get(url, options)
     JSON.parse resp
   end
 end
