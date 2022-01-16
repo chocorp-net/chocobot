@@ -4,13 +4,17 @@ require 'socket'
 
 # Runs a TCP server which receives Nagios alerts
 class Plugin
+  def stop
+  end
+
   private
 
   # Custom TCP server
   class Server < TCPServer
     private
 
-    def initialize
+    def initialize(bot)
+      @bot = bot
       @hostname = ENV['NAGIOS_SERVER_HOSTNAME']
       @port = ENV['NAGIOS_SERVER_PORT']
       super(@hostname, @port.to_i)
@@ -19,30 +23,36 @@ class Plugin
 
     def run
       @child_pid = fork do
-        loop do
-          client = accept
-          while resp = client.gets
-            bytes = resp.chomp.split(';')
-            bytes = bytes.map { |s| s.to_i }
-            type, msg, errno = bytes.pack('U*').split('|')
-            @bot.alert(type, msg, errno.to_i)
+        begin
+          loop do
+            client = accept
+            while resp = client.gets
+              bytes = resp.chomp.split(';')
+              bytes = bytes.map { |s| s.to_i }
+              type, msg, errno = bytes.pack('U*').split('|')
+              errno = errno.to_i
+              content = "`[#{type}]` #{msg}"
+              if errno == 1
+                @bot.warning content
+              elsif errno == 2
+                @bot.critical content
+              elsif errno == 3
+                @bot.unknown content
+              else
+                warn "[Nagios] Unknown errno #{errno}"
+              end
+            end
+            client.close
           end
-          client.close
+        rescue Interrupt
+          # Nothing to do
+          exit 0
         end
       end
-    end
-
-    def stop
-      # For now, just kill the child lol
-      system "kill -9 #{@child_pid}"
     end
   end
 
   def initialize(scheduler, bot)
-    @server = Server.new
-  end
-
-  def stop
-    @server.stop
+    @server = Server.new bot
   end
 end
