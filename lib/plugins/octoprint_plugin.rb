@@ -4,6 +4,9 @@ require_relative '../query_forge'
 
 # Queries several information from Octoprint api
 class Plugin
+  def stop
+  end
+
   private
 
   def initialize(scheduler, bot)
@@ -33,8 +36,5 @@ class Plugin
     rescue Errno::ECONNREFUSED # PI is off or octoprint crashed
       false
     end
-  end
-
-  def stop
   end
 end

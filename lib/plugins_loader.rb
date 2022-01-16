@@ -5,6 +5,10 @@ require 'rufus-scheduler'
 # Loads and runs plugins
 # Each plugin cosntructor takes the scheduler as only parameter
 class PluginsLoader
+  def stop
+    @plugins.each { |p| p.stop }
+  end
+
   private
 
   def initialize(bot, path = nil)
@@ -27,9 +31,5 @@ class PluginsLoader
       load f
       @plugins.append Plugin.new(@scheduler, @bot)
     end
-  end
-
-  def stop
-    @plugins.each { |p| P.stop }
   end
 end

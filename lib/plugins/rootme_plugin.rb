@@ -5,6 +5,9 @@ require_relative '../query_forge'
 # Pulls RootMe scores for my friend
 # TODO: make friend list a parameter
 class Plugin
+  def stop
+  end
+
   private
 
   def initialize(scheduler, bot)
@@ -47,8 +50,5 @@ class Plugin
     if buffer.length.positive?
       bot.info buffer.join '\n'
     end
-  end
-
-  def stop
   end
 end
