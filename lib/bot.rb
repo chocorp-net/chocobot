@@ -35,10 +35,10 @@ class ChocoBot
       @bot.run
     rescue Interrupt
       info 'Shutting down...'
-    rescue => e
+    rescue StandardError => e
       critical 'Unknown error happened'
       error e
-      $stderr.puts "#{e.class}\n#{e.message}"
+      warn "#{e.class}\n#{e.message}"
       exit 1
     end
   end
@@ -59,7 +59,7 @@ class ChocoBot
   end
 
   # Warnings.
-  def warn(msg)
+  def warning(msg)
     msg = "⚠️ #{msg}"
     send(msg)
   end
