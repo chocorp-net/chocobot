@@ -47,7 +47,7 @@ STOP >> config.rb
 
 ### Octoprint
 
-The [OctoPrint](https://github.com/OctoPrint/OctoPrint) plugins queries an OctoPrint API and send various information to the bot, such as when the printer starts and stops printing for instance.
+The [OctoPrint](https://github.com/OctoPrint/OctoPrint) plugins queries an OctoPrint API and sends various information to the bot, such as when the printer starts and stops printing for instance.
 
 Example config:
 
@@ -65,7 +65,9 @@ The [Root-Me](https://www.root-me.org) plugin queries the Root-Me API and notifi
 Example config:
 
 ```bash
+cat << STOP
 ENV['ROOTME_URL']='https://api.www.root-me.org'
 ENV['ROOTME_APIKEY']='API_KEY'
+STOP >> config.rb
 ```
 
