@@ -4,8 +4,7 @@ require_relative '../query_forge'
 
 # Queries several information from Octoprint api
 class Plugin
-  def stop
-  end
+  def stop; end
 
   private
 

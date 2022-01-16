@@ -9,12 +9,10 @@ end
 class QueryForge
   # GET request, return plain response
   def self.get(url, options = {})
-    headers = options[:headers] ? options[:headers] : {}
-    if options[:cookies]
-      headers['Cookie'] = options[:cookie]
-    end
- 
-    headers['Cookie'] = options[:cookie] if options[:cookie] != ''
+    headers = {}
+    headers ||= options[:headers]
+    headers['Cookie'] = options[:cookie] if options[:cookies]
+
     tries = 0
     while tries < 5
       begin

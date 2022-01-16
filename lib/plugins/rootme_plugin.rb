@@ -5,8 +5,7 @@ require_relative '../query_forge'
 # Pulls RootMe scores for my friend
 # TODO: make friend list a parameter
 class Plugin
-  def stop
-  end
+  def stop; end
 
   private
 
@@ -24,12 +23,26 @@ class Plugin
     url = "#{@rootme_url}/auteurs"
     scores = { 'mulog' => 62_550, 'beubz' => 469_552, 'Mcdostone' => 120_259 }
     scores.each do |k, v|
-      response = QueryForge.get_as_json("#{url}/#{v}", cookie: "api_key=#{@rootme_apikey}")
-      return nil if response.nil? || response.has_key?(:error)
+      response = QueryForge.get_as_json("#{url}/#{v}",
+                                        cookie: "api_key=#{@rootme_apikey}")
+      return nil if response.nil? || response.key?(:error)
 
       scores[k] = response['validations']
     end
     scores
+  end
+
+  def pull_chall_info(chall_id)
+    url = "#{@rootme_url}/challenges/#{chall_id}"
+    QueryForge.get_as_json(url, cookie: "api_key=#{@rootme_apikey}")
+  end
+
+  def build_solved_chall_msg(player, chall)
+    cdata = pull_chall_info(chall[:id_challenge])
+    str = "🚩 `[#{cdata['rubrique']}]` #{player} just flagged "
+    str += "**#{cdata['titre']}**"
+    str += " (#{cdata['score']} points)" if cdata['score'] != '0'
+    "#{str} !"
   end
 
   def compare_scores
@@ -38,17 +51,10 @@ class Plugin
 
     @scores.each do |player, _|
       (scores[player] - @scores[player]).each do |chall|
-        cdata = pull_chall_info(chall[:id_challenge])
-        str = "🚩 `[#{cdata[:rubrique]}]` #{player} just flagged "
-        if cdata[:score] != '0'
-          str += "**#{cdata[:titre]}** (#{cdata[:score]} points)"
-        end
-        buffer.append("#{str} !")
+        buffer.append build_solved_chall_msg(player, chall)
       end
     end
     @scores = scores
-    if buffer.length.positive?
-      bot.info buffer.join '\n'
-    end
+    bot.info(buffer.join('\n')) if buffer.length.positive?
   end
 end

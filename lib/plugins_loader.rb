@@ -6,7 +6,7 @@ require 'rufus-scheduler'
 # Each plugin cosntructor takes the scheduler as only parameter
 class PluginsLoader
   def stop
-    @plugins.each { |p| p.stop }
+    @plugins.each(&:stop)
   end
 
   private
@@ -25,9 +25,8 @@ class PluginsLoader
 
   def load_plugins
     @plugins = []
-    puts "#{@plugins_path}/*_plugin.rb"
     Dir["#{@plugins_path}/*_plugin.rb"].each do |f|
-      puts "Found #{f}"
+      puts "[Loader] Found #{f}"
       load f
       @plugins.append Plugin.new(@scheduler, @bot)
     end
