@@ -58,7 +58,10 @@ class Plugin
     buffer = []  # One entry per chall achieved
 
     @scores.each do |player, _|
-      (scores[player] - @scores[player]).each do |chall|
+      new_challs = scores[player] - @scores[player]
+      return unless new_challs.is_a? Hash
+
+      new_challs.each do |chall|
         buffer.append build_solved_chall_msg(player, chall)
       end
     end
