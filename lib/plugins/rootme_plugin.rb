@@ -29,7 +29,7 @@ class Plugin
       response = response[0] if response.is_a? Array
       return nil if response.nil? || response.key?(:error)
 
-      scores[k] = response['validations']
+      scores[k] ||= response['validations']
     end
     scores
   end
