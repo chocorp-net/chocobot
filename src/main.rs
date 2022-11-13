@@ -2,15 +2,27 @@ use reqwest::{self, header, StatusCode, ClientBuilder, Client};
 use gethostname::gethostname;
 use std::time::Duration;
 
+#[derive(Clone)]
+struct Dest<'d> {
+    pub url: &'d str,
+    pub host: &'d str,
+}
+
+impl<'d> Dest<'d> {
+    pub fn new(url: &'d str, host: &'d str) -> Dest<'d> {
+        Dest{ url, host }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let local = is_local();
-    let chocorp_url = if local { "https://192.168.0.104" } else { "https://chocorp.net" };
-    let chocoprint_url = if local { "https://192.168.0.106" } else { "https://print.chocorp.net" };
+    let chocorp_dest = Dest::new(if local { "https://192.168.0.104" } else { "https://chocorp.net" }, "chocorp.net");
+    let chocoprint_dest = Dest::new(if local { "https://192.168.0.106" } else { "https://print.chocorp.net" }, "print.chocorp.net");
     let client = build_client(local);
-    let mut result = query(&client, chocorp_url).await;
+    let result = query(&client, chocorp_dest).await;
     println!("{:?}", result.unwrap());
-    result = query(&client, chocoprint_url).await;
+    let result = query(&client, chocoprint_dest).await;
     println!("{:?}", result.unwrap());
 }
 
@@ -22,25 +34,29 @@ fn is_local() -> bool {
     }
 }
 
-fn build_client(_local: bool) -> Client {
+fn build_client(local: bool) -> Client {
     let mut headers = header::HeaderMap::new();
     headers.insert(header::HOST, header::HeaderValue::from_static("chocorp.net"));
     let timeout = Duration::from_secs(1);
 
-    ClientBuilder::new()
+    let mut builder = ClientBuilder::new()
         .default_headers(headers)
-        .timeout(timeout)
-        .danger_accept_invalid_hostnames(true)
-        .build().unwrap()
+        .timeout(timeout);
+
+    if local {
+        builder = builder.danger_accept_invalid_hostnames(true);
+    }
+
+    builder.build().unwrap()
 }
 
-async fn query(client: &Client, url: &str) -> Result<StatusCode, Box<dyn std::error::Error>> {
-    let code = client
-        .get(url)
-        .header("Host", "chocorp.net")
+async fn query<'d>(client: &Client, dest: Dest<'d>) -> Result<StatusCode, Box<dyn std::error::Error>> {
+    let resp = client
+        .get(dest.clone().url)
+        .header("Host", dest.host)
         .send()
-        .await?
-        .status();
+        .await?;
+    let code = resp.status();
 
     Ok(code)
 }
