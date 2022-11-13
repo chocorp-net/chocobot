@@ -1,5 +1,2 @@
-chocobot.pid
-config.rb
-coverage/
-*.sw[a-p]
-.vscode/
+old
+target
