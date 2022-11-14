@@ -5,12 +5,13 @@ use std::time::Duration;
 #[derive(Clone)]
 pub struct Dest<'d> {
     pub url: &'d str,
+    pub fallback: &'d str,
     pub host: &'d str,
 }
 
 impl<'d> Dest<'d> {
-    pub fn new(url: &'d str, host: &'d str) -> Dest<'d> {
-        Dest{ url, host }
+    pub fn new(url: &'d str, fallback: &'d str, host: &'d str) -> Dest<'d> {
+        Dest{ url, fallback, host }
     }
 }
 
@@ -39,8 +40,9 @@ pub fn build_client() -> Client {
 }
 
 pub async fn status<'d>(client: &Client, dest: Dest<'d>) -> Result<StatusCode, Box<dyn std::error::Error>> {
+    let url = if is_local() { dest.clone().fallback } else { dest.clone().url };
     let resp = client
-        .get(dest.clone().url)
+        .get(url)
         .header("Host", dest.host)
         .send()
         .await?;

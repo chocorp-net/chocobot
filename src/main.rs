@@ -10,8 +10,8 @@ use web::{Dest, build_client, status};
 async fn main() {
     // init
     let mut websites = Vec::<Dest>::new();
-    websites.push(Dest::new("https://chocorp.net", "chocorp.net"));
-    websites.push(Dest::new("https://print.chocorp.net", "print.chocorp.net"));
+    websites.push(Dest::new("https://chocorp.net", "https://192.168.0.104", "chocorp.net"));
+    websites.push(Dest::new("https://print.chocorp.net", "https://192.168.0.106", "print.chocorp.net"));
     let client = build_client();
 
     // filling ledger
