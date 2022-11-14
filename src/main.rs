@@ -22,10 +22,16 @@ async fn main() {
 
     loop {
         for website in &websites {
-            let status = status(&client, website.clone()).await.unwrap();
-            let state = State::from_status(status);
+            let status = status(&client, website.clone()).await;
+            let state = match status {
+                Ok(status) => State::from_status(status),
+                Err(e) => {
+                    println!("unknown error: {:?}", e);
+                    State::Error(e.to_string())
+                }
+            };
             ledger.update(website.url, state);
         }
-        sleep(Duration::from_secs(6));
+        sleep(Duration::from_secs(60));
     }
 }
