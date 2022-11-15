@@ -18,7 +18,7 @@ async fn main() {
         ),
         Dest::new(
             "https://print.chocorp.net",
-            "https://192.168.0.106",
+            "http://192.168.0.106",
             "print.chocorp.net",
         ),
     ];

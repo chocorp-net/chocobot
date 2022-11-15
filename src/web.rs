@@ -1,6 +1,6 @@
-use gethostname::gethostname;
-use reqwest::{self, Client, ClientBuilder, StatusCode};
+use reqwest::{self, redirect::Policy, Client, ClientBuilder, StatusCode};
 use std::time::Duration;
+use std::env;
 
 #[derive(Clone)]
 pub struct Dest<'d> {
@@ -21,9 +21,9 @@ impl<'d> Dest<'d> {
 
 /// Return true if run on a raspberry
 fn is_local() -> bool {
-    let result = gethostname().into_string();
+    let result = &env::var("LOCAL");
     match result {
-        Ok(hostname) => hostname.contains("rasp"),
+        Ok(_) => true,
         Err(_) => false,
     }
 }
@@ -33,7 +33,9 @@ pub fn build_client() -> Client {
     let local = is_local();
     let timeout = Duration::from_secs(1);
 
-    let mut builder = ClientBuilder::new().timeout(timeout);
+    let mut builder = ClientBuilder::new()
+        .timeout(timeout)
+        .redirect(Policy::none());
 
     if local {
         builder = builder.danger_accept_invalid_hostnames(true);
