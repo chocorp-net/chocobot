@@ -1,0 +1,12 @@
+[package]
+name = "chocobot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11.12", features = ["json", "native-tls"] } # reqwest with JSON parsing support
+futures = "0.3.25" # for our async / await blocks
+tokio = { version = "1.21.2", features = ["full"] } # for our async runtime
+discord = { git = "https://github.com/SpaceManiac/discord-rs", version = "0.9" }

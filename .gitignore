@@ -1,5 +1,5 @@
-chocobot.pid
-config.rb
-coverage/
-*.sw[a-p]
-.vscode/
+# rust
+target
+
+# config
+.env
