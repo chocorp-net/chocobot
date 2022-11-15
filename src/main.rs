@@ -1,18 +1,36 @@
-use std::{time::Duration, thread::sleep};
+use std::{env, thread::sleep, time::Duration};
 
-mod web;
 mod state;
+mod web;
 
+use discord::{model::UserId, Discord};
 use state::{Ledger, State};
-use web::{Dest, build_client, status};
+use web::{build_client, status, Dest};
 
 #[tokio::main]
 async fn main() {
     // init
-    let mut websites = Vec::<Dest>::new();
-    websites.push(Dest::new("https://chocorp.net", "https://192.168.0.104", "chocorp.net"));
-    websites.push(Dest::new("https://print.chocorp.net", "https://192.168.0.106", "print.chocorp.net"));
-    let client = build_client();
+    let websites = vec![
+        Dest::new(
+            "https://chocorp.net",
+            "https://192.168.0.104",
+            "chocorp.net",
+        ),
+        Dest::new(
+            "https://print.chocorp.net",
+            "https://192.168.0.106",
+            "print.chocorp.net",
+        ),
+    ];
+    let web_client = build_client();
+
+    // discord
+    let discord = Discord::from_bot_token(&env::var("DISCORD_TOKEN").expect("expected token"))
+        .expect("login failed");
+    let user_id_str = &env::var("DISCORD_OWNER_ID").unwrap();
+    let user_id: u64 = user_id_str.parse().unwrap();
+    let channel = discord.create_dm(UserId(user_id)).unwrap();
+    //discord.send_message(chann.id, "test mon gars", "", false).unwrap();
 
     // filling ledger
     let mut ledger = Ledger::new();
@@ -22,7 +40,7 @@ async fn main() {
 
     loop {
         for website in &websites {
-            let status = status(&client, website.clone()).await;
+            let status = status(&web_client, website.clone()).await;
             let state = match status {
                 Ok(status) => State::from_status(status),
                 Err(e) => {
@@ -30,7 +48,16 @@ async fn main() {
                     State::Error(e.to_string())
                 }
             };
-            ledger.update(website.url, state);
+            if ledger.update_and_trigger(website.url, state) {
+                discord
+                    .send_message(
+                        channel.id,
+                        &format!("Detected issue with `{}`", website.url),
+                        "",
+                        false,
+                    )
+                    .expect("Unable to send message");
+            }
         }
         sleep(Duration::from_secs(60));
     }
