@@ -30,7 +30,6 @@ async fn main() {
     let user_id_str = &env::var("DISCORD_OWNER_ID").unwrap();
     let user_id: u64 = user_id_str.parse().unwrap();
     let channel = discord.create_dm(UserId(user_id)).unwrap();
-    //discord.send_message(chann.id, "test mon gars", "", false).unwrap();
 
     // filling ledger
     let mut ledger = Ledger::new();
@@ -38,6 +37,7 @@ async fn main() {
         ledger.add(website.url.clone());
     }
 
+    // main loop
     loop {
         for website in &websites {
             let status = status(&web_client, website.clone()).await;
