@@ -5,7 +5,7 @@ use reqwest::StatusCode;
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum State {
     Down,          // status.unwrap() panics
-    Ok,            // 200
+    Ok,            // 200 or 302
     BadGateway,    // 502
     Unknown,       // other status code
     Error(String), // an issue happened
@@ -15,6 +15,8 @@ impl State {
     pub fn from_status(status: StatusCode) -> State {
         match status.as_u16() {
             200 => State::Ok,
+            // TODO follow redirects and read the 200 from /login
+            302 => State::Ok,  // Octoprint redirects to the login pqge
             502 => State::BadGateway,
             _ => State::Unknown,
         }
